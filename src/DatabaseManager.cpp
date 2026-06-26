@@ -4,7 +4,7 @@
 DatabaseManager::DatabaseManager() {
     try {
         // Connect using X Protocol (Port 33060).
-        session = std::make_unique<mysqlx::Session>("localhost", 33060, "root", "Shashank@0230");
+        session = std::make_unique<mysqlx::Session>("localhost", 33060, "root", "your_password_here");
         session->sql("USE locolink_db").execute();
     } catch (const mysqlx::Error &err) {
         std::cerr << "DB Connection Error: " << err.what() << std::endl;

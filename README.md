@@ -1,8 +1,8 @@
-# LocoLink 🚄
+# LocoLink 
 
-A high-throughput, multi-threaded C++ railway routing and reservation engine designed to bypass traditional database bottlenecks using an in-memory graph, a custom LRU cache, and a CQRS concurrency model.
+A multi-threaded C++ railway routing and reservation engine designed to bypass traditional database bottlenecks using an in-memory graph, a custom LRU cache, and a CQRS concurrency model.
 
-## 🏗️ System Overview
+## System Overview
 
 LocoLink is engineered for speed and concurrent transaction safety. 
 
@@ -13,7 +13,7 @@ LocoLink is engineered for speed and concurrent transaction safety.
 
 ---
 
-## ⚙️ Core Architecture
+## Core Architecture
 
 ### 1. The Data Layer
 Decouples disk I/O from algorithmic processing to ensure zero database latency during live searches.
@@ -40,4 +40,27 @@ Ensures high-volume transactional booking bursts do not degrade read/search late
 * **Zero-Spin Synchronization:** Worker loops utilize `std::condition_variable` tied to a `std::unique_lock`, suspending execution gracefully when queues are empty to eliminate idle CPU spin.
 * **Lazy Cache Invalidation:** Solves the stale cache problem efficiently. Upon a cache hit, the manager performs an O(1) ledger lookup. If a cached segment has ≤0 seats, the cache is instantly marked invalid and Dijkstra dynamically routes around the new bottleneck.
 * **Asynchronous Returns:** Thread boundary communication is handled via `std::promise` and `std::future`. Promises are wrapped in `std::shared_ptr` to leverage automatic reference-counting, ensuring deterministic memory deallocation.
+
+## Database Setup
+
+LocoLink uses MySQL with the modern X DevAPI (Port 33060). Before running the project, you must set up the database.
+
+1. Log into your local MySQL server.
+2. Create the database: `CREATE DATABASE locolink_db;`
+3. Ensure the following tables exist with the correct schema:
+   - `Stations`: `(station_id, name)`
+   - `TrainSegments`: `(segmentId, trainNumber, sourceId, destId, departureTime, arrivalTime, availableSeats)`
+   - `Bookings`: `(booking_id, train_id, seats_booked, booking_timestamp)`
+4. Update the connection string in `src/DatabaseManager.cpp` with your local MySQL credentials.
+
+## Build Instructions
+
+You will need `cmake`, a C++17-compatible compiler, and the `mysql-connector-c++` library installed (via Homebrew on macOS).
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+./LocoLink
 
